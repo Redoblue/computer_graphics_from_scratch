@@ -1,7 +1,4 @@
 from enum import Enum
-from typing import Annotated, Tuple
-
-import numpy as np
 
 from vector import Vector3
 
@@ -30,14 +27,14 @@ class AmbientLight(BaseLight):
 
 class PointLight(BaseLight):
 
-    def __init__(self, intensity: float, position: Annotated[Tuple[float], 3]) -> None:
+    def __init__(self, intensity: float, position: Vector3) -> None:
         super().__init__(intensity)
         self.position = Vector3(*position)
 
 
 class DirectionalLight(BaseLight):
 
-    def __init__(self, intensity: float, direction: Annotated[Tuple[float], 3]) -> None:
+    def __init__(self, intensity: float, direction: Vector3) -> None:
         super().__init__(intensity)
         self.direction = Vector3(*direction)
 

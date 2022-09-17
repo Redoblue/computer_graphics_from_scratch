@@ -1,20 +1,13 @@
-import argparse
 from typing import Tuple
 
 import numpy as np
-from numpy.typing import ArrayLike
 
 from canvas import Canvas
+from color import Color
 from light import AmbientLight, DirectionalLight, Light, PointLight
 from shape import Sphere
-from color import Color
-from vector import Vector2, Vector3
+from vector import Vector3
 
-
-VIEWPORT_SIZE = 1.
-PROJ_PLANE_Z = 1.
-CAMERA_POSITION = Vector3(0, 0, 0)
-BACKGROUND_COLOR = Color(255, 255, 255)
 
 
 scene = [
@@ -44,27 +37,27 @@ def compute_lighting(point, normal, view, specular):
                 L = light.direction
 
             # 漫反射
-            n_dot_l = np.dot(normal, L)
+            n_dot_l = normal.dot(L)
             if n_dot_l > 0:
-                intensity += light.intensity * n_dot_l / (np.linalg.norm(normal) * np.linalg.norm(L))
+                intensity += light.intensity * n_dot_l / (normal.length * L.length)
 
             # 镜面反射
             if specular != -1:
-                R = 2 * normal * np.dot(normal, L) - L
-                r_dot_v = np.dot(R, view)
+                R = 2 * normal * normal.dot(L) - L
+                r_dot_v = R.dot(view)
                 if r_dot_v > 0:
-                    intensity += light.intensity * np.power(r_dot_v / (np.linalg.norm(R) * np.linalg.norm(view)), specular)
+                    intensity += light.intensity * np.power(r_dot_v / (R.length * view.length), specular)
 
     return intensity
 
 
-def intersect_ray_sphere(origin: ArrayLike, direction: ArrayLike, sphere: Sphere) -> Tuple[float, float]:
+def intersect_ray_sphere(origin: Vector3, direction: Vector3, sphere: Sphere) -> Tuple[float, float]:
     r = sphere.radius
     CO = origin - sphere.center
 
-    a = np.dot(direction, direction)
-    b = 2 * np.dot(CO, direction)
-    c = np.dot(CO, CO) - r*r
+    a = direction.dot(direction)
+    b = 2 * CO.dot(direction)
+    c = CO.dot(CO) - r*r
 
     discriminant = b*b - 4*a*c
     if discriminant < 0:
@@ -76,7 +69,7 @@ def intersect_ray_sphere(origin: ArrayLike, direction: ArrayLike, sphere: Sphere
     return t1, t2
 
 
-def trace_ray(origin: ArrayLike, direction: ArrayLike, min_t: float, max_t: float):
+def trace_ray(origin: Vector3, direction: Vector3, min_t: float, max_t: float, background_color: Color):
     closest_t = np.inf
     closest_sphere = None
 
@@ -92,32 +85,41 @@ def trace_ray(origin: ArrayLike, direction: ArrayLike, min_t: float, max_t: floa
             closest_sphere = sphere
 
     if closest_sphere == None:
-        return BACKGROUND_COLOR
+        return background_color
 
     # 漫反射计算颜色
     point = origin + closest_t * direction
     normal = point - closest_sphere.center
-    normal = normal / np.linalg.norm(normal)
+    normal = normal.normalize()
 
     return closest_sphere.color * compute_lighting(point, normal, -direction, closest_sphere.specular)
 
 
-def main(size=(600, 600)):
-    p_camera = np.array([0, 0, 0], dtype=np.float32)
+def main(canvas_size=(400, 400), viewport_size=(1., 1.), proj_plane_z=1.0, camera_position=(0, 0, 0), background_color=(255, 255, 255)):
+    camera_position = Vector3(*camera_position)
+    background_color = Color(*background_color)
 
-    canvas = Canvas(size=size, viewport_size=(1, 1))
-    width, height = canvas.size
-    for r in range(height):
-        for c in range(width):
-            v_direction = canvas.canvas_to_viewport(r, c)
-            color = trace_ray(p_camera, v_direction, 1, np.inf)
+    canvas = Canvas(size=canvas_size, viewport_size=viewport_size, proj_plane_z=proj_plane_z)
+    for r in range(canvas.height):
+        for c in range(canvas.width):
+            direction = canvas.canvas_to_viewport(r, c)
+            color = trace_ray(camera_position, direction, 1, np.inf, background_color=background_color)
             canvas.put_pixel(r, c, color)
     canvas.show()
 
 
 if __name__ == '__main__':
+    import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--size', type=int, nargs='+', default=[600, 600])
+    parser.add_argument('--canvas-size', type=int, nargs='+', default=[600, 600])
+    parser.add_argument('--viewport-size', type=float, nargs='+', default=[1., 1.])
+    parser.add_argument('--proj-plane-z', type=float, default=1.0)
+    parser.add_argument('--camera-position', type=float, nargs='+', default=[0., 0., 0.])
+    parser.add_argument('--background-color', type=int, nargs='+', default=[255, 255, 255])
     args = parser.parse_args()
 
-    main(args.size)
+    camera_position = Vector3(*args.camera_position)
+    background_color = Color(*args.background_color)
+
+    main()

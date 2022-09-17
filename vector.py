@@ -25,16 +25,85 @@ class Vector():
     @property
     def length(self):
         return np.linalg.norm(self.__vec)
+    
+    @property
+    def dtype(self):
+        return self.__vec.dtype
+    
+    def astype(self, dtype):
+        return self.__vec.astype(dtype)
 
     def normalize(self):
-        return self.__vec / self.length
+        return self.div(self.length)
     
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.__vec.tolist()})"
+    def dot(self, other):
+        return np.dot(self.vector, other.vector)
+    
+    def add(self, other):
+        if self.__class__ == other.__class__:
+            return self.__class__.from_array(self.vector + other.vector)
+        elif isinstance(other, int) or isinstance(other, float):
+            return self.__class__.from_array(self.vector + other)
+        raise TypeError
+
+    def sub(self, other):
+        if self.__class__ == other.__class__:
+            return self.__class__.from_array(self.vector - other.vector)
+        elif isinstance(other, int) or isinstance(other, float):
+            return self.__class__.from_array(self.vector - other)
+        raise TypeError
+
+    def mul(self, other):
+        if self.__class__ == other.__class__:
+            return self.__class__.from_array(self.vector * other.vector)
+        elif isinstance(other, int) or isinstance(other, float):
+            return self.__class__.from_array(self.vector * other)
+        raise TypeError
+
+    def div(self, other):
+        if self.__class__ == other.__class__:
+            return self.__class__.from_array(self.vector / other.vector)
+        elif isinstance(other, int) or isinstance(other, float):
+            return self.__class__.from_array(self.vector / other)
+        raise TypeError
+
+    def __add__(self, other):
+        return self.add(other)
+    
+    def __radd__(self, other):
+        return self.add(other)
 
     def __sub__(self, other):
-        assert self.__class__ == other.__class__, "vector types doesn't match"
-        return self.__class__.from_array(self.vector - other.vector)
+        return self.sub(other)
+    
+    def __rsub__(self, other):
+        if self.__class__ == other.__class__:
+            return self.__class__.from_array(other.vector - self.vector)
+        elif isinstance(other, int) or isinstance(other, float):
+            return self.__class__.from_array(other / self.vector)
+        raise TypeError
+
+    def __mul__(self, other):
+        return self.mul(other)
+    
+    def __rmul__(self, other):
+        return self.mul(other)
+
+    def __truediv__(self, other):
+        return self.div(other)
+    
+    def __rtruediv__(self, other):
+        if self.__class__ == other.__class__:
+            return self.__class__.from_array(other.vector / self.vector)
+        elif isinstance(other, int) or isinstance(other, float):
+            return self.__class__.from_array(other / self.vector)
+        raise TypeError
+
+    def __neg__(self):
+        return self.__class__.from_array(-self.vector)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.__vec.tolist()})"
 
 
 class Vector2(Vector):

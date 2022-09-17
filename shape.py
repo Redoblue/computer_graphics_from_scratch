@@ -1,6 +1,4 @@
-from typing import Annotated, Tuple
-
-import numpy as np
+from typing import Tuple
 
 from vector import Vector3
 from color import Color
@@ -8,8 +6,8 @@ from color import Color
 
 class Sphere():
 
-    def __init__(self, center: Tuple[int], radius: int, color: Annotated[Tuple[int], 3]=(0, 0, 0), specular: int=-1) -> None:
+    def __init__(self, center: Tuple[float, float, float], radius: int, color: Tuple[int, int, int]=(0, 0, 0), specular: int=-1) -> None:
         self.center = Vector3(*center)
         self.radius = radius
-        self.color = color(*color)
+        self.color = Color(*color)
         self.specular = specular
