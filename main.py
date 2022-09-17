@@ -7,13 +7,21 @@ from numpy.typing import ArrayLike
 from canvas import Canvas
 from light import AmbientLight, DirectionalLight, Light, PointLight
 from shape import Sphere
+from color import Color
+from vector import Vector2, Vector3
+
+
+VIEWPORT_SIZE = 1.
+PROJ_PLANE_Z = 1.
+CAMERA_POSITION = Vector3(0, 0, 0)
+BACKGROUND_COLOR = Color(255, 255, 255)
 
 
 scene = [
     Sphere((0, -1, 3),      1,      (255, 0, 0),    500),
     Sphere((2, 0, 4),       1,      (0, 0, 255),    500),
     Sphere((-2, 0, 4),      1,      (0, 255, 0),    10),
-    Sphere((0, -5010, 0),   5000,   (255, 255, 0),  1000)
+    Sphere((0, -5001, 0),   5000,   (255, 255, 0),  1000)
 ]
 
 lights = [
@@ -25,6 +33,7 @@ lights = [
 
 def compute_lighting(point, normal, view, specular):
     intensity = 0.
+
     for light in lights:
         if light.type == Light.Ambient:
             intensity += light.intensity
@@ -83,7 +92,7 @@ def trace_ray(origin: ArrayLike, direction: ArrayLike, min_t: float, max_t: floa
             closest_sphere = sphere
 
     if closest_sphere == None:
-        return np.array([255, 255, 255])
+        return BACKGROUND_COLOR
 
     # 漫反射计算颜色
     point = origin + closest_t * direction
