@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Tuple
 
 import cv2
@@ -36,3 +37,9 @@ class Canvas():
         cv2.imshow("", self.__canvas[..., ::-1])
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+    
+    def save(self, path):
+        save_path = Path(path)
+        if not save_path.parent.exists():
+            save_path.parent.mkdir(parents=True)
+        cv2.imwrite(str(save_path), self.__canvas[..., ::-1])

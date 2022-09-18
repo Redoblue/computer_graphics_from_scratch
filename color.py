@@ -25,7 +25,12 @@ class Color:
         return min(max_value, max(min_value, value))
 
     def __add__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, Color):
+            r = self.r + other.r
+            g = self.g + other.g
+            b = self.b + other.b
+            return Color(r, g, b)
+        elif isinstance(other, (int, float)):
             r = int(self.r + other)
             g = int(self.g + other)
             b = int(self.b + other)
