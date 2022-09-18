@@ -25,6 +25,10 @@ lights = [
 
 
 def compute_lighting(point, normal, view, specular):
+    P = point
+    N = normal
+    V = view
+
     intensity = 0.
 
     for light in lights:
@@ -32,31 +36,34 @@ def compute_lighting(point, normal, view, specular):
             intensity += light.intensity
         else:
             if light.type == Light.Point:
-                L = light.position - point
+                L = light.position - P
             elif light.type == Light.Directional:
                 L = light.direction
 
             # 漫反射
-            n_dot_l = normal.dot(L)
+            n_dot_l = N.dot(L)
             if n_dot_l > 0:
-                intensity += light.intensity * n_dot_l / (normal.length * L.length)
+                intensity += light.intensity * n_dot_l / (N.length * L.length)
 
             # 镜面反射
             if specular != -1:
-                R = 2 * normal * normal.dot(L) - L
-                r_dot_v = R.dot(view)
+                R = 2 * N * N.dot(L) - L
+                r_dot_v = R.dot(V)
                 if r_dot_v > 0:
-                    intensity += light.intensity * np.power(r_dot_v / (R.length * view.length), specular)
+                    intensity += light.intensity * np.power(r_dot_v / (R.length * V.length), specular)
 
     return intensity
 
 
 def intersect_ray_sphere(origin: Vector3, direction: Vector3, sphere: Sphere) -> Tuple[float, float]:
-    r = sphere.radius
-    CO = origin - sphere.center
+    O = origin
+    D = direction
 
-    a = direction.dot(direction)
-    b = 2 * CO.dot(direction)
+    r = sphere.radius
+    CO = O - sphere.center
+
+    a = D.dot(D)
+    b = 2 * CO.dot(D)
     c = CO.dot(CO) - r*r
 
     discriminant = b*b - 4*a*c
@@ -64,17 +71,20 @@ def intersect_ray_sphere(origin: Vector3, direction: Vector3, sphere: Sphere) ->
         return np.inf, np.inf
 
     t1 = (-b + np.sqrt(discriminant)) / (2 * a)
-    t2 = ( b + np.sqrt(discriminant)) / (2 * a)
+    t2 = (-b - np.sqrt(discriminant)) / (2 * a)
 
     return t1, t2
 
 
 def trace_ray(origin: Vector3, direction: Vector3, min_t: float, max_t: float, background_color: Color):
+    O = origin
+    D = direction
+
     closest_t = np.inf
     closest_sphere = None
 
     for sphere in scene:
-        t1, t2 = intersect_ray_sphere(origin, direction, sphere)
+        t1, t2 = intersect_ray_sphere(O, D, sphere)
 
         if min_t <= t1 <= max_t and t1 < closest_t:
             closest_t = t1
@@ -88,11 +98,11 @@ def trace_ray(origin: Vector3, direction: Vector3, min_t: float, max_t: float, b
         return background_color
 
     # 漫反射计算颜色
-    point = origin + closest_t * direction
-    normal = point - closest_sphere.center
-    normal = normal.normalize()
+    P = O + closest_t * D
+    N = P - closest_sphere.center
+    N = N.normalize()
 
-    return closest_sphere.color * compute_lighting(point, normal, -direction, closest_sphere.specular)
+    return closest_sphere.color * compute_lighting(P, N, -D, closest_sphere.specular)
 
 
 def main(canvas_size=(400, 400), viewport_size=(1., 1.), proj_plane_z=1.0, camera_position=(0, 0, 0), background_color=(255, 255, 255)):
@@ -104,7 +114,7 @@ def main(canvas_size=(400, 400), viewport_size=(1., 1.), proj_plane_z=1.0, camer
         for c in range(canvas.width):
             direction = canvas.canvas_to_viewport(r, c)
             color = trace_ray(camera_position, direction, 1, np.inf, background_color=background_color)
-            canvas.put_pixel(r, c, color)
+            canvas.put_pixel(r, c, color.clamp())
     canvas.show()
 
 
@@ -119,7 +129,8 @@ if __name__ == '__main__':
     parser.add_argument('--background-color', type=int, nargs='+', default=[255, 255, 255])
     args = parser.parse_args()
 
-    camera_position = Vector3(*args.camera_position)
-    background_color = Color(*args.background_color)
-
-    main()
+    main(args.canvas_size,
+        args.viewport_size,
+        args.proj_plane_z,
+        args.camera_position,
+        args.background_color)

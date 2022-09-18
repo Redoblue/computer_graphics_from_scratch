@@ -25,12 +25,11 @@ class Canvas():
 
     def put_pixel(self, row: int, col: int, color: Tuple[int, int, int]=(0, 0, 0)) -> None:
         if 0 <= row < self.height and 0 <= col < self.width:
-            row = self.height - row - 1
             self.__canvas[row, col, :] = color.array
 
     def canvas_to_viewport(self, row: int, col: int):
-        x = self.viewport_size[0] * (col - self.width / 2) / self.width
-        y = self.viewport_size[1] * (row - self.height / 2) / self.height
+        x =  self.viewport_size[0] * (col - self.width  / 2) / self.width
+        y = -self.viewport_size[1] * (row - self.height / 2) / self.height
         return Vector3(x, y, self.proj_plane_z)
 
     def show(self):

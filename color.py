@@ -13,15 +13,15 @@ class Color:
         return np.array([self.r, self.g, self.b])
 
     def clamp(self):
-        return np.array([Color.clamp(self.r), Color.clamp(self.g), Color.clamp(self.b)])
+        return Color(Color._clamp(self.r), Color._clamp(self.g), Color._clamp(self.b))
 
     def clamp_(self):
-        self.r = Color.clamp(self.r)
-        self.g = Color.clamp(self.g)
-        self.b = Color.clamp(self.b)
+        self.r = Color._clamp(self.r)
+        self.g = Color._clamp(self.g)
+        self.b = Color._clamp(self.b)
 
     @staticmethod
-    def clamp(value, min_value=0, max_value=255):
+    def _clamp(value, min_value=0, max_value=255):
         return min(max_value, max(min_value, value))
 
     def __add__(self, other):
@@ -42,6 +42,9 @@ class Color:
             b = int(self.b * other)
             return Color(r, g, b)
         raise TypeError
-    
+
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + f'({self.r}, {self.g}, {self.b})'

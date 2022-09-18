@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 class Vector():
 
     def __init__(self, *coords) -> None:
-        self.__vec = np.array(coords)
+        self._vec = np.array(coords)
 
     @classmethod
     def from_array(cls, array: ArrayLike):
@@ -20,18 +20,18 @@ class Vector():
 
     @property
     def vector(self):
-        return self.__vec
+        return self._vec
 
     @property
     def length(self):
-        return np.linalg.norm(self.__vec)
+        return np.linalg.norm(self._vec)
     
     @property
     def dtype(self):
-        return self.__vec.dtype
+        return self._vec.dtype
     
     def astype(self, dtype):
-        return self.__vec.astype(dtype)
+        return self._vec.astype(dtype)
 
     def normalize(self):
         return self.div(self.length)
@@ -103,7 +103,7 @@ class Vector():
         return self.__class__.from_array(-self.vector)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.__vec.tolist()})"
+        return f"{self.__class__.__name__}({self._vec.tolist()})"
 
 
 class Vector2(Vector):
@@ -113,15 +113,15 @@ class Vector2(Vector):
 
     @property
     def xy(self):
-        return self.__vec
+        return self._vec
 
     @property
     def x(self):
-        return self.__vec[0]
+        return self._vec[0]
 
     @property
     def y(self):
-        return self.__vec[1]
+        return self._vec[1]
 
 
 class Vector3(Vector):
@@ -131,19 +131,19 @@ class Vector3(Vector):
 
     @property
     def xyz(self):
-        return self.__vec
+        return self._vec
 
     @property
     def x(self):
-        return self.__vec[0]
+        return self._vec[0]
 
     @property
     def y(self):
-        return self.__vec[1]
+        return self._vec[1]
 
     @property
     def z(self):
-        return self.__vec[2]
+        return self._vec[2]
 
 
 if __name__ == '__main__':
