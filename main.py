@@ -37,8 +37,15 @@ def compute_lighting(point, normal, view, specular):
         else:
             if light.type == Light.Point:
                 L = light.position - P
+                max_t = 1
             elif light.type == Light.Directional:
                 L = light.direction
+                max_t = np.inf
+            
+            # 阴影检测
+            shadow_sphere, shadow_t = closest_intersection(P, L, 0.001, max_t)
+            if shadow_sphere != None:
+                continue
 
             # 漫反射
             n_dot_l = N.dot(L)
@@ -76,7 +83,7 @@ def intersect_ray_sphere(origin: Vector3, direction: Vector3, sphere: Sphere) ->
     return t1, t2
 
 
-def trace_ray(origin: Vector3, direction: Vector3, min_t: float, max_t: float, background_color: Color):
+def closest_intersection(origin: Vector3, direction: Vector3, min_t: float=0, max_t: float=np.inf) -> Tuple[Sphere, float]:
     O = origin
     D = direction
 
@@ -93,7 +100,15 @@ def trace_ray(origin: Vector3, direction: Vector3, min_t: float, max_t: float, b
         if min_t <= t2 <= max_t and t2 < closest_t:
             closest_t = t2
             closest_sphere = sphere
+    
+    return closest_sphere, closest_t
 
+
+def trace_ray(origin: Vector3, direction: Vector3, min_t: float, max_t: float, background_color: Color):
+    O = origin
+    D = direction
+
+    closest_sphere, closest_t = closest_intersection(O, D, min_t, max_t)
     if closest_sphere == None:
         return background_color
 
